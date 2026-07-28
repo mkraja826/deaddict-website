@@ -1,7 +1,7 @@
 {
-  "name": "DeAddict",
+  "name": "DeAddict Prototype",
   "short_name": "DeAddict",
-  "description": "A private, judgment-free habit change and wellness support prototype.",
+  "description": "A privacy-conscious static prototype for habit-change reflection and educational support.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
