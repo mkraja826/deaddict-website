@@ -6,6 +6,7 @@ on:
       - main
       - phase-1/**
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,6 +20,9 @@ jobs:
 
       - name: Validate JavaScript syntax
         run: node --check script.js
+
+      - name: Validate Python utility syntax
+        run: python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
 
       - name: Validate local pages and assets
         run: python scripts/check_static_site.py
