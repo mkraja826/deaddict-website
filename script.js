@@ -1,11 +1,33 @@
 // ---- Phase 1 shared behavior ----
 const CRISIS_SUPPORT_URL = 'https://findahelpline.com/';
 
+function ensureHeadLink(rel, href, attributes = {}) {
+  let link = document.querySelector(`link[rel="${rel}"]`);
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = rel;
+    document.head.appendChild(link);
+  }
+  link.href = href;
+  Object.entries(attributes).forEach(([name, value]) => link.setAttribute(name, value));
+}
+
+ensureHeadLink('icon', 'favicon.svg', { type: 'image/svg+xml' });
+ensureHeadLink('manifest', 'site.webmanifest');
+
 // Keep placeholder canonical URLs out of rendered pages until a final domain is configured.
 const canonical = document.querySelector('link[rel="canonical"]');
 if (canonical) {
   const cleanUrl = window.location.href.split('#')[0].replace(/index\.html$/, '');
   canonical.setAttribute('href', cleanUrl);
+
+  let ogUrl = document.querySelector('meta[property="og:url"]');
+  if (!ogUrl) {
+    ogUrl = document.createElement('meta');
+    ogUrl.setAttribute('property', 'og:url');
+    document.head.appendChild(ogUrl);
+  }
+  ogUrl.setAttribute('content', cleanUrl);
 }
 
 // ---- Sticky header compact-on-scroll ----
@@ -109,6 +131,7 @@ function closeMobileNav({ restoreFocus = true } = {}) {
 if (menuToggle && mobileNav) menuToggle.addEventListener('click', openMobileNav);
 if (menuClose && mobileNav) menuClose.addEventListener('click', () => closeMobileNav());
 if (mobileNav) {
+  mobileNav.setAttribute('aria-hidden', mobileNav.classList.contains('is-open') ? 'false' : 'true');
   mobileNav.querySelectorAll('a').forEach(link => link.addEventListener('click', () => closeMobileNav({ restoreFocus: false })));
   document.addEventListener('keydown', event => {
     if (!mobileNav.classList.contains('is-open')) return;
@@ -201,6 +224,27 @@ if (categorySection) {
   searchInput?.addEventListener('input', applyCategoryFilters);
 }
 
+// ---- Add a real Resources destination to the home page ----
+if (!document.getElementById('resources') && document.getElementById('features')) {
+  const resources = document.createElement('section');
+  resources.id = 'resources';
+  resources.className = 'bg-alt';
+  resources.innerHTML = `
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Resources</span>
+        <h2>Start with practical, low-pressure guidance.</h2>
+        <p>These demo resources show the educational direction of DeAddict. They do not replace professional care.</p>
+      </div>
+      <div class="grid grid-3">
+        <a href="support-alcohol.html" class="card" style="text-decoration:none"><span class="eyebrow">Support guide</span><h3 style="font-size:1.05rem">Understanding alcohol patterns</h3><p class="mb-0">Common triggers, warning signs and when to seek medical help.</p></a>
+        <a href="checkin.html" class="card" style="text-decoration:none"><span class="eyebrow">Interactive demo</span><h3 style="font-size:1.05rem">Try a daily check-in</h3><p class="mb-0">Walk through the mood, urge and trigger flow without creating an account.</p></a>
+        <a href="pricing.html" class="card" style="text-decoration:none"><span class="eyebrow">Product status</span><h3 style="font-size:1.05rem">See planned access</h3><p class="mb-0">Review what is available in the demo and what remains planned.</p></a>
+      </div>
+    </div>`;
+  document.getElementById('pricing-preview')?.before(resources);
+}
+
 // ---- Generic single-select scale buttons ----
 document.querySelectorAll('[data-scale]').forEach(group => {
   group.querySelectorAll('.scale-btn').forEach(button => {
@@ -210,6 +254,55 @@ document.querySelectorAll('[data-scale]').forEach(group => {
     });
   });
 });
+
+// ---- Safer demo check-in behavior ----
+const checkinWrap = document.querySelector('.checkin-wrap');
+if (checkinWrap) {
+  checkinWrap.querySelectorAll('[data-scale] .scale-btn').forEach(button => button.setAttribute('aria-pressed', 'false'));
+
+  const urgeButtons = [...checkinWrap.querySelectorAll('[data-step="2"] .scale-btn')];
+  const urgeValues = ['0', '2', '4', '6', '8', '10'];
+  urgeButtons.forEach((button, index) => {
+    if (urgeValues[index]) button.textContent = urgeValues[index];
+  });
+
+  function showStepError(step, message) {
+    let error = step.querySelector('.checkin-error');
+    if (!error) {
+      error = document.createElement('p');
+      error.className = 'checkin-error field-error';
+      error.setAttribute('role', 'alert');
+      step.querySelector('.checkin-nav')?.before(error);
+    }
+    error.textContent = message;
+    error.focus?.();
+  }
+
+  checkinWrap.querySelectorAll('.next-step').forEach(button => {
+    button.addEventListener('click', event => {
+      const step = button.closest('.checkin-step');
+      const key = step?.dataset.step;
+      if (!step || !['1', '2', '3'].includes(key)) return;
+      const selected = step.querySelector('.scale-btn[aria-pressed="true"]');
+      if (selected) {
+        step.querySelector('.checkin-error')?.remove();
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const message = key === '3'
+        ? 'Choose whether the behavior happened today before continuing.'
+        : 'Choose one option before continuing.';
+      showStepError(step, message);
+    }, true);
+  });
+
+  const successCopy = checkinWrap.querySelector('[data-step="5-ok"] p');
+  if (successCopy) successCopy.textContent = 'Demo check-in complete. This prototype does not save or upload your answers yet.';
+
+  const setbackCopy = checkinWrap.querySelector('[data-step="5-setback"] > p');
+  if (setbackCopy) setbackCopy.textContent = 'Thank you for being honest. This demo does not save your answers, and a difficult day does not erase progress.';
+}
 
 // ---- Theme toggle with local persistence ----
 const themeToggle = document.getElementById('themeToggle');
@@ -224,6 +317,63 @@ if (themeToggle) {
     root.setAttribute('data-theme', nextTheme);
     localStorage.setItem('deaddict-theme', nextTheme);
   });
+}
+
+// ---- Honest demo/product status messaging ----
+const appMain = document.querySelector('.app-main');
+if (appMain) {
+  const noticeText = appMain.querySelector('.notice p');
+  if (noticeText) noticeText.textContent = 'Interactive front-end demo: the information shown here is sample data and check-ins are not saved yet.';
+  const statusTag = appMain.querySelector('.app-topbar .tag');
+  if (statusTag) statusTag.textContent = 'Demo data · No account connected';
+}
+
+const privacySection = document.getElementById('privacy');
+if (privacySection) {
+  const intro = privacySection.querySelector('h2 + p');
+  if (intro) intro.textContent = 'The current public demo does not create accounts or save check-in data. Authentication, encrypted storage, export and deletion controls must be completed before production use.';
+  privacySection.querySelectorAll('.feature-item h3').forEach(heading => {
+    if (!heading.textContent.startsWith('Planned:')) heading.textContent = `Planned: ${heading.textContent}`;
+  });
+  const promiseCard = privacySection.querySelector('.card');
+  if (promiseCard) {
+    const paragraphs = promiseCard.querySelectorAll('p');
+    if (paragraphs[0]) paragraphs[0].textContent = 'Production privacy controls are not live yet.';
+    if (paragraphs[1]) paragraphs[1].textContent = 'This phase is a front-end demo. Sensitive data storage will remain disabled until security and consent controls are implemented and reviewed.';
+  }
+}
+
+document.querySelectorAll('.accordion-trigger').forEach(button => {
+  const question = button.textContent.toLowerCase();
+  const panelParagraph = button.nextElementSibling?.querySelector('p');
+  if (question.includes('use deaddict anonymously') && panelParagraph) {
+    panelParagraph.textContent = 'Anonymous mode is planned, but accounts and data storage are not enabled in this front-end demo.';
+  }
+  if (question.includes('track more than one habit') && panelParagraph) {
+    panelParagraph.textContent = 'The current demo shows one sample goal. Multiple-goal support is planned for a later product phase.';
+  }
+});
+
+const premiumPrice = [...document.querySelectorAll('.price-amount')].find(element => element.textContent.includes('[monthly price]'));
+if (premiumPrice) {
+  premiumPrice.textContent = 'Coming soon';
+  const period = premiumPrice.parentElement?.querySelector('.price-period');
+  if (period) period.textContent = '';
+
+  const pricingCard = premiumPrice.closest('.pricing-card');
+  const badge = pricingCard?.querySelector('.tag');
+  if (badge) badge.textContent = 'Planned';
+  const annualCopy = pricingCard?.querySelector('.plan-fineprint.mt-0');
+  if (annualCopy) annualCopy.textContent = 'Premium pricing will be announced after the core tracking and privacy foundation is complete.';
+  const trialLink = [...(pricingCard?.querySelectorAll('a') || [])].find(link => link.textContent.toLowerCase().includes('premium trial'));
+  if (trialLink) {
+    trialLink.removeAttribute('href');
+    trialLink.setAttribute('aria-disabled', 'true');
+    trialLink.classList.add('is-disabled-link');
+    trialLink.textContent = 'Premium coming soon';
+  }
+  const trialFinePrint = [...(pricingCard?.querySelectorAll('.plan-fineprint') || [])].find(element => element !== annualCopy);
+  if (trialFinePrint) trialFinePrint.textContent = 'No payment or trial system is active in this demo.';
 }
 
 // ---- Replace demo-only dead links with honest destinations/states ----
@@ -269,7 +419,7 @@ document.querySelectorAll('a[href="#"]').forEach(link => {
 });
 
 const disabledStyle = document.createElement('style');
-disabledStyle.textContent = '.is-disabled-link{color:var(--color-muted)!important;cursor:not-allowed;text-decoration:none;opacity:.72}.category-card[hidden]{display:none!important}';
+disabledStyle.textContent = '.is-disabled-link{color:var(--color-muted)!important;cursor:not-allowed;text-decoration:none;opacity:.72}.category-card[hidden]{display:none!important}.checkin-error{margin-top:var(--space-3)}';
 document.head.appendChild(disabledStyle);
 
 // ---- Simple toast helper ----
