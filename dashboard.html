@@ -3,108 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard | DeAddict</title>
+<title>Sample Dashboard | DeAddict</title>
+<meta name="description" content="Explore a sample DeAddict dashboard using fictional demonstration data. No account or saved personal information is connected.">
+<meta name="theme-color" content="#2B6E68">
+<meta name="robots" content="noindex,follow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="site.webmanifest">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 <div class="app-shell">
-  <nav class="app-sidebar" aria-label="App navigation">
-    <a href="index.html" class="logo" style="margin-bottom:var(--space-4);">
-      <span class="day-arc" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="var(--color-border)" stroke-width="3"/><path d="M14 3 A11 11 0 0 1 23.5 19" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"/></svg></span>
-      DeAddict
-    </a>
-    <a href="dashboard.html" aria-current="page">🏠 Dashboard</a>
-    <a href="checkin.html">✅ Daily check-in</a>
-    <a href="#">📈 Progress</a>
-    <a href="#">⚡ Trigger log</a>
-    <a href="#">📓 Journal</a>
-    <a href="#">🎯 Goals</a>
-    <a href="#">⚙️ Settings &amp; privacy</a>
-    <button class="icon-btn" id="themeToggle" style="margin-top:auto;" aria-label="Toggle dark mode">🌗</button>
+  <nav class="app-sidebar" aria-label="Demo navigation">
+    <a href="index.html" class="logo" style="margin-bottom:var(--space-4);"><span class="day-arc" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="var(--color-border)" stroke-width="3"/><path d="M14 3 A11 11 0 0 1 23.5 19" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"/></svg></span>DeAddict</a>
+    <a href="dashboard.html" aria-current="page">🏠 Sample dashboard</a>
+    <a href="checkin.html">✅ Demo check-in</a>
+    <span class="nav-coming-soon">📈 Progress <small>Planned</small></span>
+    <span class="nav-coming-soon">⚡ Trigger log <small>Planned</small></span>
+    <span class="nav-coming-soon">📓 Journal <small>Planned</small></span>
+    <span class="nav-coming-soon">🎯 Goals <small>Planned</small></span>
+    <span class="nav-coming-soon">⚙️ Settings &amp; privacy <small>Planned</small></span>
+    <button class="icon-btn" id="themeToggle" type="button" style="margin-top:auto;" aria-label="Toggle dark mode">🌗</button>
   </nav>
-
   <main class="app-main" id="main">
     <div class="app-topbar">
-      <div>
-        <span class="eyebrow">Tuesday, July 28</span>
-        <h1 style="font-size:1.7rem;margin-bottom:0;">Good evening, Priya.</h1>
-      </div>
-      <div class="tag tag-success">Day 42 · Reducing evening screen time</div>
+      <div><span class="eyebrow">Fictional demonstration</span><h1 style="font-size:1.7rem;margin-bottom:0;">Sample dashboard</h1></div>
+      <div class="tag tag-neutral">Demo data · No account connected</div>
     </div>
-
-    <div class="notice" style="margin-bottom:var(--space-5);">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 1.5l6 2.2v4.4c0 4-2.6 6.9-6 8.4-3.4-1.5-6-4.4-6-8.4V3.7L9 1.5z" stroke="currentColor" stroke-width="1.3"/></svg>
-      <p class="mb-0">This dashboard is private to you. DeAddict is a self-management tool, not a substitute for professional care.</p>
-    </div>
-
+    <div class="notice" style="margin-bottom:var(--space-5);"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M9 1.5l6 2.2v4.4c0 4-2.6 6.9-6 8.4-3.4-1.5-6-4.4-6-8.4V3.7L9 1.5z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><p class="mb-0">All names, goals, entries, milestones, and insights below are fictional examples. The current prototype does not connect an account or save check-ins.</p></div>
     <div class="grid grid-3">
-      <div class="card">
-        <span class="eyebrow">Today</span>
-        <h3>Today's check-in</h3>
-        <p>Takes about a minute. You haven't logged today yet.</p>
-        <a href="checkin.html" class="btn btn-primary btn-sm">Complete Today's Check-In</a>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">Progress</span>
-        <h3>How am I doing?</h3>
-        <div class="mock-stat-value" style="margin:var(--space-2) 0;">7 of the last 10 days on track</div>
-        <p>Urge intensity has trended down over the last two weeks.</p>
-        <a href="#" class="btn btn-ghost btn-sm">View full report</a>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">Coming up</span>
-        <h3>Next milestone</h3>
-        <p><strong>6 weeks</strong> of reduced evening screen time — 8 days away.</p>
-        <div style="height:8px;background:var(--color-surface-alt);border-radius:99px;overflow:hidden;"><div style="width:75%;height:100%;background:var(--color-primary);"></div></div>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">In the moment</span>
-        <h3>Feeling an urge right now?</h3>
-        <p>Log it and try a short grounding exercise.</p>
-        <a href="#" class="btn btn-secondary btn-sm">Record an Urge</a>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">Reflection</span>
-        <h3>Recent journal entry</h3>
-        <p style="font-style:italic;">"Noticed I reach for my phone most right after dinner, when I'm not sure what to do next..."</p>
-        <a href="#" class="btn btn-ghost btn-sm">Open journal</a>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">This week's insight</span>
-        <h3>Weekly insight</h3>
-        <p>Urges have been lower on days you take a short walk after dinner. Consider making that a regular routine.</p>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">Suggested for you</span>
-        <h3>Recommended exercise</h3>
-        <p>A 3-minute breathing exercise for evening restlessness.</p>
-        <a href="#" class="btn btn-ghost btn-sm">Start exercise</a>
-      </div>
-
-      <div class="card">
-        <span class="eyebrow">Your plan</span>
-        <h3>Current goal</h3>
-        <p><strong>Reduce</strong> evening screen time to under 1 hour after 8pm.</p>
-        <a href="#" class="btn btn-ghost btn-sm">Adjust My Goal</a>
-      </div>
-
-      <div class="card" style="background:var(--color-critical-tint); border:none;">
-        <h3 style="color:var(--color-critical);font-size:1rem;">Need support right now?</h3>
-        <p class="mb-0">If you're in crisis or think you may be in danger, don't wait — reach out immediately.</p>
-        <a href="#" class="btn btn-critical btn-sm" style="margin-top:var(--space-2);">Find Professional Support</a>
-      </div>
+      <div class="card"><span class="eyebrow">Available demo</span><h3>Daily check-in</h3><p>Try the interaction flow in about a minute. Your answers will not be saved.</p><a href="checkin.html" class="btn btn-primary btn-sm">Try Demo Check-In</a></div>
+      <div class="card"><span class="eyebrow">Sample progress</span><h3>How might progress appear?</h3><div class="mock-stat-value" style="margin:var(--space-2) 0;">7 of 10 days on track</div><p>Illustrative trend only. No real history is connected.</p><span class="btn btn-ghost btn-sm is-disabled-link" aria-disabled="true">Reports planned</span></div>
+      <div class="card"><span class="eyebrow">Sample milestone</span><h3>Next milestone</h3><p><strong>6 weeks</strong> of a sample reduced-screen-time goal — 8 fictional days away.</p><div style="height:8px;background:var(--color-surface-alt);border-radius:99px;overflow:hidden;"><div style="width:75%;height:100%;background:var(--color-primary);"></div></div></div>
+      <div class="card"><span class="eyebrow">Planned</span><h3>Urge log</h3><p>A future version may support fast urge logging and coping actions.</p><span class="btn btn-secondary btn-sm is-disabled-link" aria-disabled="true">Coming later</span></div>
+      <div class="card"><span class="eyebrow">Sample reflection</span><h3>Journal preview</h3><p style="font-style:italic;">“I noticed the urge was strongest after dinner, when I had no activity planned.”</p><span class="btn btn-ghost btn-sm is-disabled-link" aria-disabled="true">Journal planned</span></div>
+      <div class="card"><span class="eyebrow">Sample insight</span><h3>Weekly insight</h3><p>A replacement routine may be associated with lower urges. Production insights would need enough real data and transparent calculations.</p></div>
+      <div class="card"><span class="eyebrow">Planned</span><h3>Grounding exercise</h3><p>Short exercises may be added after content and safety review.</p><span class="btn btn-ghost btn-sm is-disabled-link" aria-disabled="true">Exercise planned</span></div>
+      <div class="card"><span class="eyebrow">Sample goal</span><h3>Current goal</h3><p><strong>Reduce</strong> evening screen time to under one hour after 8:00 PM.</p><span class="btn btn-ghost btn-sm is-disabled-link" aria-disabled="true">Goal editing planned</span></div>
+      <div class="card" style="background:var(--color-critical-tint);border:none;"><h3 style="color:var(--color-critical);font-size:1rem;">Need support right now?</h3><p>If you may be in immediate danger, contact local emergency services. For other urgent support, use a verified local directory.</p><a href="https://findahelpline.com/" target="_blank" rel="noopener noreferrer" class="btn btn-critical btn-sm">Find Local Support</a></div>
     </div>
   </main>
 </div>
-
-<a href="#" class="help-fab">💬 Get help</a>
+<a href="https://findahelpline.com/" target="_blank" rel="noopener noreferrer" class="help-fab">💬 Find support</a>
 <script src="script.js"></script>
 </body>
 </html>
