@@ -23,6 +23,10 @@ This file records the primary public-health references used to review the Phase 
 - NHS, “Alcohol support”  
   https://www.nhs.uk/live-well/alcohol-advice/alcohol-support/
 
+## Review scope
+
+The Phase 1 review checked that the page reflects commonly listed warning signs and does not advise abrupt unsupervised cessation when physical dependence may be present. It did not validate individualized treatment advice, local emergency numbers, medication guidance, or launch-region regulatory requirements.
+
 ## Product-content rule
 
 Educational pages must:
