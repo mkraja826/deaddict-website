@@ -1,37 +1,42 @@
 # DeAddict Website
 
-DeAddict is currently a static front-end prototype for a private, judgment-free habit change and wellness product.
+DeAddict is currently a static front-end prototype for a private, judgment-free habit-change and wellness product.
 
-## Current status
+## Phase 1 status
 
-Phase 1 focuses on making the public prototype honest, navigable, responsive and deployable without pretending that unfinished product systems are live.
+Phase 1 makes the public prototype honest, navigable, responsive, accessible, and ready for static deployment without presenting unfinished systems as live.
 
-Implemented in Phase 1:
+Implemented:
 
-- Responsive marketing pages
-- Mobile dashboard navigation
+- Responsive public landing, plans, educational, dashboard, and check-in pages
+- Mobile navigation for the sample dashboard
+- Keyboard focus trapping and Escape-key support for mobile drawers
 - Working support-category search and filters
-- Keyboard-accessible mobile navigation and accordion improvements
-- Safer daily check-in demo validation
-- Clear demo/planned labels for data storage, privacy and premium features
-- Global crisis-support directory link
-- Favicon, web manifest, robots policy and baseline static security headers
-- Automated static-site checks
+- Accordion relationships using `aria-controls`
+- Explicit validation for required check-in answers
+- A true 0–10 urge range in the demo
+- Clear sample/planned labels for dashboard, privacy, storage, and Premium features
+- No placeholder canonical domain or pricing tokens in public source
+- Global support-directory links for urgent human help
+- Favicon, web manifest, robots policy, and baseline static response headers
+- Automated JavaScript, Python, local-link, fragment, metadata, and placeholder checks
+- A production sitemap generator for use after the final domain is known
 
-Not implemented yet:
+Not implemented:
 
-- User authentication
+- Authentication
 - Database or cloud storage
-- Saved check-ins, journals, goals or progress reports
-- Billing or subscriptions
+- Saved check-ins, journals, goals, or reports
+- Billing, subscriptions, trials, or refunds
 - Production privacy controls and consent flows
-- Clinical review and localized professional-support directories
+- Personalized medical advice or treatment
+- Full clinical, legal, security, and localization review
 
-No check-in answers are saved or uploaded in the current repository.
+No check-in answers are saved or uploaded by this repository.
 
 ## Local preview
 
-Because this is a static site, use any local HTTP server from the repository root.
+Run an HTTP server from the repository root:
 
 ```bash
 python -m http.server 8080
@@ -39,26 +44,50 @@ python -m http.server 8080
 
 Then open `http://localhost:8080`.
 
+## Validation
+
+```bash
+node --check script.js
+python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
+python scripts/check_static_site.py
+```
+
+The same checks are defined in `.github/workflows/static-site-checks.yml`.
+
 ## Main pages
 
-- `index.html` — public landing page
-- `support-alcohol.html` — educational support-category example
-- `pricing.html` — current access and planned premium features
-- `dashboard.html` — sample dashboard using demo data
-- `checkin.html` — interactive check-in prototype
+- `index.html` — public prototype landing page
+- `support-alcohol.html` — educational alcohol-pattern and safety guide
+- `pricing.html` — current access and planned product status
+- `dashboard.html` — fictional sample dashboard, marked `noindex`
+- `checkin.html` — unsaved interactive demo, marked `noindex`
+
+## Production domain and sitemap
+
+Canonical URLs are intentionally omitted until the final production HTTPS domain is known. After connecting the domain, add absolute canonical URLs to the three public pages and generate the sitemap:
+
+```bash
+python scripts/generate_sitemap.py https://example.com
+```
+
+Then add this line to `robots.txt` using the real domain:
+
+```text
+Sitemap: https://example.com/sitemap.xml
+```
 
 ## Deployment
 
-The repository can be deployed as a static site on Cloudflare Pages, GitHub Pages, Netlify or similar hosting.
+The repository can be deployed to Cloudflare Pages, GitHub Pages, Netlify, or another static host. The `_headers` file is intended for hosts that support this format.
 
-Before production launch:
+Before collecting sensitive data:
 
-1. Connect the final production domain.
-2. Replace source canonical URLs with that domain.
-3. Generate an absolute `sitemap.xml` and add its URL to `robots.txt`.
-4. Add real privacy, terms, accessibility and contact pages.
-5. Complete security and clinical review before enabling sensitive data collection.
+1. Add real privacy, terms, accessibility, and contact pages.
+2. Implement authentication, authorization, encryption, consent, export, and deletion.
+3. Complete security, legal, and clinical review.
+4. Localize emergency and professional-support pathways.
+5. Test keyboard, screen-reader, mobile, and reduced-motion behavior on deployed pages.
 
-## Safety
+## Safety and content sources
 
-DeAddict is presented as a wellness and self-management prototype, not medical treatment or an emergency service. Crisis-support links open the Find A Helpline global directory in a new tab.
+DeAddict is presented as a wellness prototype, not medical treatment or an emergency service. See `CONTENT_SOURCES.md` for the official references used during the Phase 1 alcohol-content review.
