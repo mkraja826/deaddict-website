@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding demo | DeAddict</title>
+<meta name="description" content="Try the DeAddict onboarding prototype without creating an account or saving your selections.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="site.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .onboarding-wrap{max-width:720px;margin-inline:auto;padding:var(--space-6) var(--space-4) var(--space-8)}
+  .onboarding-progress{display:flex;gap:8px;margin-bottom:var(--space-5)}
+  .onboarding-progress span{height:5px;flex:1;border-radius:99px;background:var(--color-border)}
+  .onboarding-progress span.done{background:var(--color-primary)}
+  .onboarding-step{display:none}
+  .onboarding-step.is-active{display:block}
+  .choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3);margin-top:var(--space-4)}
+  .onboarding-option{min-height:96px;text-align:left;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-ink);border-radius:var(--radius-md);padding:var(--space-4);cursor:pointer;font:inherit;transition:border-color var(--transition),background var(--transition),transform var(--transition)}
+  .onboarding-option:hover{transform:translateY(-1px);border-color:var(--color-secondary)}
+  .onboarding-option[aria-pressed="true"]{border-color:var(--color-primary);background:var(--color-primary-tint);box-shadow:0 0 0 2px color-mix(in srgb,var(--color-primary) 18%,transparent)}
+  .onboarding-option strong{display:block;margin-bottom:.25rem;font-family:var(--font-display);font-size:1.1rem}
+  .onboarding-option span{display:block;color:var(--color-ink-soft);font-size:.9rem}
+  .onboarding-nav{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-top:var(--space-5)}
+  .onboarding-summary{display:grid;gap:var(--space-3);margin:var(--space-4) 0}
+  .summary-row{display:flex;justify-content:space-between;gap:var(--space-3);padding:var(--space-3);background:var(--color-surface-alt);border-radius:var(--radius-sm)}
+  .summary-row span:first-child{color:var(--color-muted)}
+  @media(max-width:600px){.choice-grid{grid-template-columns:1fr}.onboarding-wrap{padding-inline:var(--space-3)}.onboarding-option{min-height:84px}.summary-row{display:block}.summary-row strong{display:block;margin-top:.2rem}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header" id="siteHeader"><div class="container header-inner"><a href="index.html" class="logo"><span class="day-arc" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="var(--color-border)" stroke-width="3"/><path d="M14 3 A11 11 0 0 1 23.5 19" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"/></svg></span>DeAddict</a><div class="header-actions"><a href="privacy.html" class="btn btn-ghost btn-sm">Privacy</a><a href="index.html" class="btn btn-secondary btn-sm">Exit demo</a></div></div></header>
+<main id="main" class="onboarding-wrap" data-onboarding>
+  <div class="notice" style="margin-bottom:var(--space-5);"><p class="mb-0"><strong>Front-end demo:</strong> your choices remain only on this page and disappear when you refresh, leave, or close it. No account is created and nothing is intentionally saved or uploaded.</p></div>
+
+  <section class="onboarding-step is-active" data-onboarding-step="category" aria-labelledby="category-title">
+    <div class="onboarding-progress" aria-label="Step 1 of 3"><span class="done"></span><span></span><span></span></div>
+    <span class="eyebrow">Step 1 of 3</span>
+    <h1 id="category-title" style="font-size:clamp(1.7rem,1.5rem + 1vw,2.3rem);">What would you like support with?</h1>
+    <p>Choose a broad category for this demonstration. This is not a diagnosis or screening result.</p>
+    <div class="choice-grid" data-choice-group="category">
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Alcohol"><strong>Alcohol</strong><span>Explore drinking patterns and possible next steps.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Nicotine or vaping"><strong>Nicotine or vaping</strong><span>Notice cravings, routines, and triggers.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Digital habits"><strong>Digital habits</strong><span>Review scrolling, gaming, or screen-time patterns.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Gambling"><strong>Gambling</strong><span>Reflect on time, spending, and triggers.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Food or compulsive habits"><strong>Food or compulsive habits</strong><span>Observe repeated patterns without judgment.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Something else"><strong>Something else</strong><span>Use the same reflection tools for another habit.</span></button>
+    </div>
+    <div class="onboarding-nav"><a href="index.html" class="btn btn-ghost">Cancel</a><button class="btn btn-primary onboarding-next" type="button">Continue</button></div>
+  </section>
+
+  <section class="onboarding-step" data-onboarding-step="approach" aria-labelledby="approach-title">
+    <div class="onboarding-progress" aria-label="Step 2 of 3"><span class="done"></span><span class="done"></span><span></span></div>
+    <span class="eyebrow">Step 2 of 3</span>
+    <h1 id="approach-title" style="font-size:clamp(1.7rem,1.5rem + 1vw,2.3rem);">What feels most useful right now?</h1>
+    <p>You can choose a direction without making a permanent commitment.</p>
+    <div class="choice-grid" data-choice-group="approach">
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Understand my patterns"><strong>Understand my patterns</strong><span>Observe first before deciding what to change.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Reduce gradually"><strong>Reduce gradually</strong><span>Work toward smaller, realistic changes over time.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Stop completely"><strong>Stop completely</strong><span>Explore a clear stop goal with appropriate support.</span></button>
+      <button class="onboarding-option" type="button" aria-pressed="false" data-value="Not sure yet"><strong>Not sure yet</strong><span>Begin with reflection and revisit the goal later.</span></button>
+    </div>
+    <div class="onboarding-nav"><button class="btn btn-ghost onboarding-back" type="button">Back</button><button class="btn btn-primary onboarding-next" type="button">Review</button></div>
+  </section>
+
+  <section class="onboarding-step" data-onboarding-step="review" aria-labelledby="review-title">
+    <div class="onboarding-progress" aria-label="Step 3 of 3"><span class="done"></span><span class="done"></span><span class="done"></span></div>
+    <span class="eyebrow">Step 3 of 3</span>
+    <h1 id="review-title" style="font-size:clamp(1.7rem,1.5rem + 1vw,2.3rem);">Review this demo path</h1>
+    <p>This summary is generated only in your current page memory.</p>
+    <div class="onboarding-summary" aria-live="polite">
+      <div class="summary-row"><span>Support category</span><strong data-summary="category">Not selected</strong></div>
+      <div class="summary-row"><span>Current approach</span><strong data-summary="approach">Not selected</strong></div>
+    </div>
+    <div class="notice critical" data-substance-safety hidden><p class="mb-0"><strong>Safety note:</strong> stopping alcohol abruptly after regular heavy use can be dangerous. A qualified clinician can advise whether medical support is needed. Seek emergency care for severe symptoms such as seizures, hallucinations, serious confusion, or loss of consciousness.</p></div>
+    <div class="notice" style="margin-top:var(--space-3);"><p class="mb-0">The next screen is also a non-persistent demonstration. It does not create a treatment plan, save answers, or replace professional support.</p></div>
+    <div class="onboarding-nav"><button class="btn btn-ghost onboarding-back" type="button">Back</button><a href="checkin.html" class="btn btn-primary">Continue to Demo Check-In</a></div>
+  </section>
+</main>
+<footer class="site-footer"><div class="container"><p class="footer-disclaimer">DeAddict is a wellness and self-management prototype, not medical treatment, therapy, rehabilitation, emergency care, or crisis support.</p><div class="footer-bottom"><span>© 2026 DeAddict.</span><span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="accessibility.html">Accessibility</a></span></div></div></footer>
+<script src="script.js"></script>
+<script src="onboarding.js"></script>
+</body>
+</html>

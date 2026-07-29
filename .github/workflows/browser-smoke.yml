@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'phase-1/**'
+      - 'phase-2/**'
   pull_request:
   workflow_dispatch:
 
@@ -16,6 +17,15 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Enforce non-persistent onboarding controller
+        if: ${{ hashFiles('onboarding.js') != '' }}
+        run: |
+          set -euo pipefail
+          if grep -En 'localStorage|sessionStorage|document\.cookie|indexedDB|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket' onboarding.js; then
+            echo 'The onboarding controller must remain non-persistent and network-free in Phase 2.'
+            exit 1
+          fi
 
       - name: Start local site and render key pages
         run: |
@@ -42,10 +52,83 @@ jobs:
 
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/index-desktop.png http://127.0.0.1:8080/index.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/index-mobile.png http://127.0.0.1:8080/index.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/onboarding-mobile.png http://127.0.0.1:8080/onboarding.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/onboarding-review-mobile.png 'http://127.0.0.1:8080/onboarding.html?ci-smoke=alcohol'
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/dashboard-mobile.png http://127.0.0.1:8080/dashboard.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/checkin-mobile.png http://127.0.0.1:8080/checkin.html
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/alcohol-desktop.png http://127.0.0.1:8080/support-alcohol.html
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/plans-desktop.png http://127.0.0.1:8080/pricing.html
+          "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/privacy-desktop.png http://127.0.0.1:8080/privacy.html
+
+          "$browser" "${common_flags[@]}" --dump-dom http://127.0.0.1:8080/onboarding.html > browser-smoke/onboarding-dom.html
+          "$browser" "${common_flags[@]}" --dump-dom 'http://127.0.0.1:8080/onboarding.html?ci-smoke=alcohol' > browser-smoke/onboarding-review-dom.html
+
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.steps = {}
+                  self.selected = []
+                  self.summary = {}
+                  self.current_summary = None
+                  self.safety_hidden = None
+                  self.root = {}
+
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if 'data-onboarding' in values:
+                      self.root = values
+                  step = values.get('data-onboarding-step')
+                  if step:
+                      self.steps[step] = 'hidden' in values
+                  classes = values.get('class', '').split()
+                  if 'onboarding-option' in classes and values.get('aria-pressed') == 'true':
+                      self.selected.append(values.get('data-value'))
+                  if 'data-summary' in values:
+                      self.current_summary = values['data-summary']
+                      self.summary[self.current_summary] = ''
+                  if 'data-substance-safety' in values:
+                      self.safety_hidden = 'hidden' in values
+
+              def handle_data(self, data):
+                  if self.current_summary:
+                      self.summary[self.current_summary] += data
+
+              def handle_endtag(self, tag):
+                  if tag == 'strong' and self.current_summary:
+                      self.summary[self.current_summary] = self.summary[self.current_summary].strip()
+                      self.current_summary = None
+
+          def parse(path):
+              parser = Parser()
+              parser.feed(Path(path).read_text(encoding='utf-8'))
+              return parser
+
+          initial = parse('browser-smoke/onboarding-dom.html')
+          if initial.steps != {'category': False, 'approach': True, 'review': True}:
+              raise SystemExit(f'Unexpected initial onboarding visibility: {initial.steps}')
+          if initial.selected:
+              raise SystemExit(f'Onboarding must begin without preselected answers: {initial.selected}')
+          if initial.summary != {'category': 'Not selected', 'approach': 'Not selected'}:
+              raise SystemExit(f'Unexpected initial summary: {initial.summary}')
+
+          review = parse('browser-smoke/onboarding-review-dom.html')
+          if review.steps != {'category': True, 'approach': True, 'review': False}:
+              raise SystemExit(f'CI onboarding did not reach review: {review.steps}')
+          if review.selected != ['Alcohol', 'Stop completely']:
+              raise SystemExit(f'Unexpected selected onboarding values: {review.selected}')
+          if review.summary != {'category': 'Alcohol', 'approach': 'Stop completely'}:
+              raise SystemExit(f'Unexpected review summary: {review.summary}')
+          if review.safety_hidden is not False:
+              raise SystemExit('Alcohol safety notice must be visible at review.')
+          if review.root.get('data-ci-smoke-complete') != 'true':
+              raise SystemExit('Local CI onboarding flow did not complete.')
+          if review.root.get('data-ci-focused') != 'review-title':
+              raise SystemExit(f'Review heading did not receive focus: {review.root.get("data-ci-focused")}')
+          PY
 
           for image in browser-smoke/*.png; do
             test -s "$image"
@@ -56,6 +139,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: deaddict-browser-smoke
-          path: browser-smoke/*.png
+          path: browser-smoke/*
           if-no-files-found: error
           retention-days: 14

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'phase-1/**'
+      - 'phase-2/**'
   pull_request:
   workflow_dispatch:
 
@@ -18,8 +19,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Validate JavaScript syntax
+      - name: Validate shared JavaScript syntax
         run: node --check script.js
+
+      - name: Validate onboarding JavaScript syntax
+        if: ${{ hashFiles('onboarding.js') != '' }}
+        run: node --check onboarding.js
 
       - name: Compile Python utilities
         if: ${{ hashFiles('scripts/check_static_site.py', 'scripts/generate_sitemap.py') != '' }}
