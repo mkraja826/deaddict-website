@@ -1,0 +1,30 @@
+name: Static site checks
+
+on:
+  push:
+    branches:
+      - main
+      - 'phase-1/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate JavaScript syntax
+        run: node --check script.js
+
+      - name: Compile Python utilities
+        if: ${{ hashFiles('scripts/check_static_site.py', 'scripts/generate_sitemap.py') != '' }}
+        run: python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
+
+      - name: Validate local pages and assets
+        if: ${{ hashFiles('scripts/check_static_site.py') != '' }}
+        run: python scripts/check_static_site.py
