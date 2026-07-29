@@ -14,6 +14,8 @@
   const deleteError = root.querySelector('[data-delete-error]');
   const memory = { discreetMode: true, state: 'signed-out' };
 
+  root.dataset.authAdapter = window.DeAddictAuthAdapter?.isConfigured === false ? 'disabled' : 'unexpected';
+
   function showPanel(name, { focus = true } = {}) {
     memory.state = name;
     panels.forEach(panel => {
@@ -128,6 +130,26 @@
     });
   });
 
+  function runLocalSmoke() {
+    const localHost = ['127.0.0.1', 'localhost'].includes(window.location.hostname);
+    const mode = new URLSearchParams(window.location.search).get('ci-smoke');
+    if (!localHost || mode !== 'account') return;
+
+    if (emailInput) emailInput.value = 'ci-preview@example.invalid';
+    form?.querySelectorAll('input[type="checkbox"][required]').forEach(input => {
+      input.checked = true;
+    });
+    form?.requestSubmit();
+    root.querySelector('[data-preview-session]')?.click();
+    root.querySelector('[data-export-request]')?.click();
+
+    root.dataset.ciSmokeComplete = memory.state === 'signed-in' ? 'true' : 'false';
+    root.dataset.ciState = memory.state;
+    root.dataset.ciEmailCleared = emailInput?.value === '' ? 'true' : 'false';
+    root.dataset.ciFocused = document.activeElement?.id || '';
+  }
+
   // Explicitly initialize hidden panels without moving focus on page load.
   showPanel('signed-out', { focus: false });
+  runLocalSmoke();
 })();
