@@ -7,6 +7,7 @@ on:
       - 'phase-1/**'
       - 'phase-2/**'
       - 'phase-3/**'
+      - 'phase-4/**'
   pull_request:
   workflow_dispatch:
 
@@ -27,6 +28,12 @@ jobs:
         if: ${{ hashFiles('onboarding.js') != '' }}
         run: node --check onboarding.js
 
+      - name: Validate account preview JavaScript syntax
+        if: ${{ hashFiles('account.js', 'auth-adapter.js') != '' }}
+        run: |
+          node --check account.js
+          node --check auth-adapter.js
+
       - name: Compile Python utilities
         if: ${{ hashFiles('scripts/*.py') != '' }}
         run: python -m py_compile scripts/*.py
@@ -38,3 +45,7 @@ jobs:
       - name: Validate Phase 3 private-data SQL
         if: ${{ hashFiles('scripts/check_phase3_sql.py') != '' }}
         run: python scripts/check_phase3_sql.py
+
+      - name: Validate Phase 4 account and server contracts
+        if: ${{ hashFiles('scripts/check_phase4_contracts.py') != '' }}
+        run: python scripts/check_phase4_contracts.py
