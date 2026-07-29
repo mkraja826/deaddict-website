@@ -19,14 +19,14 @@
     heading.focus();
   }
 
-  function showStep(index) {
+  function showStep(index, { focus = true } = {}) {
     currentIndex = Math.max(0, Math.min(index, steps.length - 1));
     steps.forEach((step, stepIndex) => {
       const isActive = stepIndex === currentIndex;
       step.classList.toggle('is-active', isActive);
       step.hidden = !isActive;
     });
-    focusStepHeading(activeStep());
+    if (focus) focusStepHeading(activeStep());
   }
 
   function removeError(step) {
@@ -91,6 +91,21 @@
     button.addEventListener('click', () => showStep(currentIndex - 1));
   });
 
-  // Explicit initialization prevents hidden content from becoming keyboard-focusable.
-  showStep(0);
+  // Initialize without moving focus. Focus changes only after a user action.
+  showStep(0, { focus: false });
+
+  // Local CI-only interaction path. It exercises the same click handlers as the UI,
+  // never accepts user data, and cannot activate on a deployed production hostname.
+  const ciMode = new URLSearchParams(window.location.search).get('ci-smoke');
+  const isLocalHost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+  if (isLocalHost && ciMode === 'alcohol') {
+    const alcohol = onboarding.querySelector('[data-choice-group="category"] [data-value="Alcohol"]');
+    const stopCompletely = onboarding.querySelector('[data-choice-group="approach"] [data-value="Stop completely"]');
+    alcohol?.click();
+    steps[0]?.querySelector('.onboarding-next')?.click();
+    stopCompletely?.click();
+    steps[1]?.querySelector('.onboarding-next')?.click();
+    onboarding.dataset.ciSmokeComplete = String(currentIndex === 2);
+    onboarding.dataset.ciFocused = document.activeElement?.id || '';
+  }
 })();
