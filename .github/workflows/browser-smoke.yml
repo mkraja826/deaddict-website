@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'phase-1/**'
+      - 'phase-2/**'
   pull_request:
   workflow_dispatch:
 
@@ -16,6 +17,15 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Enforce non-persistent onboarding controller
+        if: ${{ hashFiles('onboarding.js') != '' }}
+        run: |
+          set -euo pipefail
+          if grep -En 'localStorage|sessionStorage|document\.cookie|indexedDB|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket' onboarding.js; then
+            echo 'The onboarding controller must remain non-persistent and network-free in Phase 2.'
+            exit 1
+          fi
 
       - name: Start local site and render key pages
         run: |
@@ -42,10 +52,41 @@ jobs:
 
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/index-desktop.png http://127.0.0.1:8080/index.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/index-mobile.png http://127.0.0.1:8080/index.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/onboarding-mobile.png http://127.0.0.1:8080/onboarding.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/dashboard-mobile.png http://127.0.0.1:8080/dashboard.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/checkin-mobile.png http://127.0.0.1:8080/checkin.html
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/alcohol-desktop.png http://127.0.0.1:8080/support-alcohol.html
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/plans-desktop.png http://127.0.0.1:8080/pricing.html
+          "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/privacy-desktop.png http://127.0.0.1:8080/privacy.html
+
+          "$browser" "${common_flags[@]}" --dump-dom http://127.0.0.1:8080/onboarding.html > browser-smoke/onboarding-dom.html
+
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class Parser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.steps = {}
+                  self.selected_options = 0
+
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  step = values.get('data-onboarding-step')
+                  if step:
+                      self.steps[step] = 'hidden' in values
+                  if 'onboarding-option' in values.get('class', '').split() and values.get('aria-pressed') == 'true':
+                      self.selected_options += 1
+
+          parser = Parser()
+          parser.feed(Path('browser-smoke/onboarding-dom.html').read_text(encoding='utf-8'))
+          expected = {'category': False, 'approach': True, 'review': True}
+          if parser.steps != expected:
+              raise SystemExit(f'Unexpected initial onboarding step visibility: {parser.steps}')
+          if parser.selected_options:
+              raise SystemExit('Onboarding must begin without preselected answers.')
+          PY
 
           for image in browser-smoke/*.png; do
             test -s "$image"
@@ -56,6 +97,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: deaddict-browser-smoke
-          path: browser-smoke/*.png
+          path: browser-smoke/*
           if-no-files-found: error
           retention-days: 14
