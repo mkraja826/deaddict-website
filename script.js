@@ -226,13 +226,24 @@ if (checkinWrap) {
   });
 }
 
-// Mark purely visual disabled elements consistently.
+// Mark purely visual disabled elements and responsive fixes consistently.
 const utilityStyle = document.createElement('style');
 utilityStyle.textContent = `
   body.nav-open{overflow:hidden}
   .is-disabled-link{color:var(--color-muted)!important;cursor:not-allowed;text-decoration:none;opacity:.75}
   .category-card[hidden]{display:none!important}
   .checkin-error{margin-top:var(--space-3)}
+  @media(max-width:480px){
+    .site-header .header-inner{gap:.5rem;padding-left:1rem;padding-right:.5rem}
+    .site-header .logo{font-size:1.1rem;flex-shrink:0}
+    .site-header .logo .day-arc svg{width:24px;height:24px}
+    .site-header .header-actions{gap:.5rem;min-width:0}
+    .site-header .header-actions .btn{padding:.55rem .8rem;font-size:.78rem}
+    .site-header .menu-toggle{width:38px;height:38px;flex:0 0 38px}
+    .app-main{padding-bottom:7rem}
+    .help-fab{right:.75rem;bottom:.75rem;width:48px;height:48px;padding:0;justify-content:center;gap:0;font-size:0;overflow:hidden}
+    .help-fab::before{content:"💬";font-size:1.1rem;line-height:1}
+  }
 `;
 document.head.appendChild(utilityStyle);
 
