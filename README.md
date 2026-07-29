@@ -4,44 +4,44 @@ DeAddict is currently a static front-end prototype for a private, judgment-free 
 
 ## Current status
 
-Phase 1 established the honest, responsive, accessible static foundation. Phase 2 adds a trust and onboarding layer without enabling accounts or persistent recovery records.
+Phase 1 established the honest, responsive static foundation. Phase 2 added trust pages and a non-persistent onboarding demo. Phase 3 now drafts the private account and structured-data architecture, but it does not connect to or modify a live backend.
 
-### Implemented
+### Implemented in the repository
 
 - Responsive public landing, plans, educational, dashboard, check-in, onboarding, privacy, terms, and accessibility pages
 - Three-step guided onboarding demo with explicit category and approach selection
 - Onboarding selections held only in current-page JavaScript memory
 - No preselected onboarding or required check-in answers
 - Alcohol-specific withdrawal safety notice in onboarding review
-- Mobile navigation for public pages and the sample dashboard
-- Keyboard focus trapping and Escape-key support for mobile drawers
-- Working support-category search and filters
-- Accordion relationships using `aria-controls`
-- A true 0–10 urge range in the check-in demo
-- Clear sample/planned labels for dashboard, storage, billing, and Premium features
 - Current prototype Privacy notice, Terms of use, and Accessibility statement
-- A repository data-handling contract for sensitive recovery information
-- Global support-directory links for urgent human help
-- Favicon, web manifest, robots policy, and baseline static response headers
-- Automated JavaScript, Python, local-link, fragment, metadata, placeholder, and browser-render checks
+- Sensitive-data handling contract and Phase 3 threat model
+- Authentication and session contract
+- Export and deletion runbook
+- Unapplied PostgreSQL/Supabase migration draft with user ownership, forced row-level security, restricted grants, and structured fields only
+- Automated validation for JavaScript, Python, static links, browser rendering, onboarding non-persistence, and Phase 3 SQL safety requirements
 - A production sitemap generator for use after the final domain is known
 
 ### Deliberately not implemented
 
-- Authentication or social login
-- Database, cloud storage, cookies, IndexedDB, or browser persistence for recovery answers
+- Live authentication or social login
+- Any connected database or cloud-storage project
 - Saved check-ins, journals, goals, onboarding selections, or reports
 - Analytics, advertising pixels, session replay, email capture, or marketing automation
 - Billing, subscriptions, trials, or refunds
-- Production consent, account recovery, export, deletion, or incident-response systems
+- Production export, deletion, backup-retention, or incident-response services
+- AI processing of recovery information
 - Personalized medical advice, diagnosis, treatment, or detox supervision
-- Full clinical, legal, security, accessibility, and localization review
+- Clinical, legal, security, accessibility, and localization certification
 
-No onboarding or check-in answers are intentionally saved or uploaded by this repository.
+No onboarding or check-in answers are intentionally saved or uploaded by the website. The Phase 3 SQL migration is a review artifact and must not be applied to a live project until a separate deployment approval identifies the exact target project and completes security testing.
 
-## Data boundary
+## Security and data boundary
 
-`DATA_HANDLING.md` is the current engineering guardrail. It prohibits recovery-related persistence until a future architecture includes explicit consent, minimum collection, encryption, user isolation, export, deletion, session revocation, incident response, retention rules, threat modelling, and cross-user authorization tests.
+- `DATA_HANDLING.md` — collection and persistence guardrail
+- `SECURITY_THREAT_MODEL.md` — protected assets, abuse cases, and release controls
+- `docs/AUTH_AND_SESSION_CONTRACT.md` — authentication and token boundary
+- `docs/DATA_EXPORT_DELETION_RUNBOOK.md` — future server-side export and deletion behavior
+- `PHASE_3_PLAN.md` — Phase 3 scope, exclusions, and merge gate
 
 ## Local preview
 
@@ -58,15 +58,41 @@ Then open `http://localhost:8080`.
 ```bash
 node --check script.js
 node --check onboarding.js
-python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
+python -m py_compile scripts/*.py
 python scripts/check_static_site.py
+python scripts/check_phase3_sql.py
 ```
 
 The same checks are defined in `.github/workflows/static-site-checks.yml`. `.github/workflows/browser-smoke.yml` also:
 
 - rejects onboarding use of local/session storage, cookies, IndexedDB, network requests, beacons, and WebSockets;
 - renders key pages in headless Chrome at desktop and mobile sizes;
-- verifies the initial onboarding state has no preselected answers and keeps later steps hidden.
+- verifies onboarding begins empty;
+- exercises Alcohol → Stop completely → Review;
+- verifies the withdrawal safety notice and keyboard focus behavior;
+- verifies a fresh load returns to an empty state.
+
+## Phase 3 migration draft
+
+`supabase/migrations/20260729160700_phase3_private_foundation.sql` defines:
+
+- `user_profiles`
+- `consent_records`
+- `goals`
+- `checkins`
+- `export_requests`
+- `deletion_requests`
+
+Every table references `auth.users` with deletion cascades, enables and forces row-level security, revokes default client privileges, and uses explicit owner policies based on `auth.uid()`. The first slice excludes free-text journal content.
+
+The migration remains unapplied. Before applying it anywhere:
+
+1. Confirm the exact disposable test project.
+2. Review every table, field, policy, grant, trigger, and cascade.
+3. Run cross-user select/insert/update/delete tests.
+4. Verify service-role keys never reach browsers.
+5. Approve consent wording, retention, backups, export, deletion, and incident response.
+6. Complete legal and security review for intended launch regions.
 
 ## Main pages
 
@@ -88,24 +114,7 @@ Canonical URLs are intentionally omitted until the final production HTTPS domain
 python scripts/generate_sitemap.py https://example.com
 ```
 
-Then add this line to `robots.txt` using the real domain:
-
-```text
-Sitemap: https://example.com/sitemap.xml
-```
-
-## Deployment
-
-The repository can be deployed to Cloudflare Pages, GitHub Pages, Netlify, or another static host. The `_headers` file is intended for hosts that support this format.
-
-Before collecting sensitive data:
-
-1. Approve a field-by-field data inventory and purpose.
-2. Implement authentication, authorization, encryption, consent, export, and deletion.
-3. Prove one user cannot access another user's information.
-4. Complete security, legal, clinical, and regional privacy review.
-5. Localize emergency and professional-support pathways.
-6. Test keyboard, screen-reader, zoom, mobile, and reduced-motion behavior on deployed pages.
+Then add the real sitemap URL to `robots.txt`.
 
 ## Safety and content sources
 
