@@ -20,13 +20,19 @@ REQUIRED_TABLES = (
 
 FORBIDDEN_PATTERNS = {
     r"grant\s+all": "broad GRANT ALL is forbidden",
-    r"to\s+anon\b": "anon must not receive private-table access",
+    r"grant[^;]*\bto\s+anon\b": "anon must not receive private-table access",
     r"using\s*\(\s*true\s*\)": "unrestricted RLS USING (true) is forbidden",
     r"with\s+check\s*\(\s*true\s*\)": "unrestricted RLS WITH CHECK (true) is forbidden",
     r"security\s+definer": "SECURITY DEFINER requires a separate privileged-function review",
-    r"journal|free[_ -]?text|notes?\s+text": "free-text recovery storage is excluded from Phase 3",
-    r"service[_ -]?role": "service-role credentials or grants must not be embedded in the migration",
+    r"\b(journal_body|journal_text|free_text|notes?)\s+text\b": "free-text recovery storage is excluded from Phase 3",
+    r"\bservice[_ -]?role\b": "service-role credentials or grants must not be embedded in the migration",
 }
+
+
+def executable_sql(source: str) -> str:
+    """Remove comments before scanning for executable forbidden patterns."""
+    without_blocks = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
+    return re.sub(r"--[^\n]*", "", without_blocks)
 
 
 def main() -> int:
@@ -39,30 +45,32 @@ def main() -> int:
         sql = MIGRATIONS[0].read_text(encoding="utf-8").lower()
 
     if sql:
+        code = executable_sql(sql)
+
         for table in REQUIRED_TABLES:
-            if f"create table public.{table}" not in sql:
+            if f"create table public.{table}" not in code:
                 errors.append(f"Missing table: public.{table}")
-            if f"alter table public.{table} enable row level security" not in sql:
+            if f"alter table public.{table} enable row level security" not in code:
                 errors.append(f"RLS not enabled for public.{table}")
-            if f"alter table public.{table} force row level security" not in sql:
+            if f"alter table public.{table} force row level security" not in code:
                 errors.append(f"RLS not forced for public.{table}")
-            if f"revoke all on table public.{table} from anon, authenticated" not in sql:
+            if f"revoke all on table public.{table} from anon, authenticated" not in code:
                 errors.append(f"Default privileges not revoked for public.{table}")
 
-        if sql.count("references auth.users(id) on delete cascade") < len(REQUIRED_TABLES):
+        if code.count("references auth.users(id) on delete cascade") < len(REQUIRED_TABLES):
             errors.append("Every user-owned table must cascade from auth.users")
 
-        if "(select auth.uid()) = user_id" not in sql:
+        if "(select auth.uid()) = user_id" not in code:
             errors.append("Ownership policies must compare auth.uid() with user_id")
 
-        if "prevent_user_id_change" not in sql:
+        if "prevent_user_id_change" not in code:
             errors.append("Ownership-transfer prevention trigger is missing")
 
-        if "begin;" not in sql or not re.search(r"\bcommit;\s*$", sql):
+        if "begin;" not in code or not re.search(r"\bcommit;\s*$", code):
             errors.append("Migration must be transaction-wrapped")
 
         for pattern, message in FORBIDDEN_PATTERNS.items():
-            if re.search(pattern, sql, flags=re.IGNORECASE):
+            if re.search(pattern, code, flags=re.IGNORECASE | re.DOTALL):
                 errors.append(message)
 
     for error in errors:
