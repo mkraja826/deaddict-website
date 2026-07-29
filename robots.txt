@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# dashboard.html and checkin.html use page-level noindex metadata.
+# Add the absolute sitemap URL here after the production domain is connected.
