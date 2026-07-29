@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - phase-1/**
+      - 'phase-1/**'
   pull_request:
   workflow_dispatch:
 
@@ -26,3 +26,49 @@ jobs:
 
       - name: Validate local pages and assets
         run: python scripts/check_static_site.py
+
+      - name: Render desktop and mobile browser smoke screenshots
+        run: |
+          set -euo pipefail
+          python -m http.server 8080 > /tmp/deaddict-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent --show-error http://127.0.0.1:8080/index.html > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          browser="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$browser" ]; then
+            echo "No supported Chrome/Chromium executable found on the runner."
+            exit 1
+          fi
+
+          mkdir -p browser-smoke
+          common_flags=(--headless=new --no-sandbox --disable-gpu --hide-scrollbars --disable-dev-shm-usage)
+
+          "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/index-desktop.png http://127.0.0.1:8080/index.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/index-mobile.png http://127.0.0.1:8080/index.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/dashboard-mobile.png http://127.0.0.1:8080/dashboard.html
+          "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/checkin-mobile.png http://127.0.0.1:8080/checkin.html
+          "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/alcohol-desktop.png http://127.0.0.1:8080/support-alcohol.html
+          "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/plans-desktop.png http://127.0.0.1:8080/pricing.html
+
+          test -s browser-smoke/index-desktop.png
+          test -s browser-smoke/index-mobile.png
+          test -s browser-smoke/dashboard-mobile.png
+          test -s browser-smoke/checkin-mobile.png
+          test -s browser-smoke/alcohol-desktop.png
+          test -s browser-smoke/plans-desktop.png
+
+      - name: Upload browser smoke screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deaddict-browser-smoke
+          path: browser-smoke/*.png
+          if-no-files-found: error
+          retention-days: 14
