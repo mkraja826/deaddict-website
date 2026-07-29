@@ -22,7 +22,9 @@ jobs:
         run: node --check script.js
 
       - name: Compile Python utilities
+        if: ${{ hashFiles('scripts/check_static_site.py', 'scripts/generate_sitemap.py') != '' }}
         run: python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
 
       - name: Validate local pages and assets
+        if: ${{ hashFiles('scripts/check_static_site.py') != '' }}
         run: python scripts/check_static_site.py
