@@ -6,6 +6,7 @@ on:
       - main
       - 'phase-1/**'
       - 'phase-2/**'
+      - 'phase-3/**'
   pull_request:
   workflow_dispatch:
 
@@ -27,9 +28,13 @@ jobs:
         run: node --check onboarding.js
 
       - name: Compile Python utilities
-        if: ${{ hashFiles('scripts/check_static_site.py', 'scripts/generate_sitemap.py') != '' }}
-        run: python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py
+        if: ${{ hashFiles('scripts/*.py') != '' }}
+        run: python -m py_compile scripts/*.py
 
       - name: Validate local pages and assets
         if: ${{ hashFiles('scripts/check_static_site.py') != '' }}
         run: python scripts/check_static_site.py
+
+      - name: Validate Phase 3 private-data SQL
+        if: ${{ hashFiles('scripts/check_phase3_sql.py') != '' }}
+        run: python scripts/check_phase3_sql.py

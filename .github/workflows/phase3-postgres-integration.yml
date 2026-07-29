@@ -1,0 +1,56 @@
+name: Phase 3 PostgreSQL integration
+
+on:
+  push:
+    branches:
+      - 'phase-3/**'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-rls:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: deaddict_phase3_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d deaddict_phase3_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: deaddict_phase3_test
+      PGUSER: postgres
+      PGPASSWORD: postgres
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Confirm PostgreSQL client
+        run: psql --version
+
+      - name: Bootstrap disposable Supabase auth fixtures
+        run: psql -v ON_ERROR_STOP=1 -f tests/phase3/bootstrap_supabase_auth.sql
+
+      - name: Apply the unapplied Phase 3 migration
+        run: |
+          set -euo pipefail
+          migration="$(find supabase/migrations -maxdepth 1 -type f -name '*_phase3_private_foundation.sql')"
+          test -n "$migration"
+          psql -v ON_ERROR_STOP=1 -f "$migration"
+
+      - name: Execute User A, User B, anonymous, cascade, and job-state tests
+        run: psql -v ON_ERROR_STOP=1 -f tests/phase3/rls_integration.sql
