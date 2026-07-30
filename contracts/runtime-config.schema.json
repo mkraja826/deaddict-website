@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:deaddict:runtime-config",
+  "title": "DeAddict runtime configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "deploymentMode",
+    "publicOrigin",
+    "allowedRedirectOrigins",
+    "backendProvider",
+    "backendProjectRef",
+    "publicClientKeyConfigured",
+    "serverSecretsConfigured",
+    "emailDeliveryConfigured",
+    "migrationApplied",
+    "authEnabled",
+    "persistenceEnabled",
+    "exportEnabled",
+    "deletionEnabled",
+    "sessionRevocationEnabled",
+    "incidentOwnerConfigured",
+    "approvedConsentVersions"
+  ],
+  "properties": {
+    "deploymentMode": { "enum": ["disabled", "staging", "production"] },
+    "publicOrigin": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "format": "uri", "pattern": "^https://" }
+      ]
+    },
+    "allowedRedirectOrigins": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "format": "uri", "pattern": "^https://" }
+    },
+    "backendProvider": {
+      "oneOf": [
+        { "type": "null" },
+        { "enum": ["supabase"] }
+      ]
+    },
+    "backendProjectRef": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 6, "maxLength": 64, "pattern": "^[A-Za-z0-9_-]+$" }
+      ]
+    },
+    "publicClientKeyConfigured": { "type": "boolean" },
+    "serverSecretsConfigured": { "type": "boolean" },
+    "emailDeliveryConfigured": { "type": "boolean" },
+    "migrationApplied": { "type": "boolean" },
+    "authEnabled": { "type": "boolean" },
+    "persistenceEnabled": { "type": "boolean" },
+    "exportEnabled": { "type": "boolean" },
+    "deletionEnabled": { "type": "boolean" },
+    "sessionRevocationEnabled": { "type": "boolean" },
+    "incidentOwnerConfigured": { "type": "boolean" },
+    "approvedConsentVersions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["documentKey", "version"],
+        "properties": {
+          "documentKey": { "enum": ["privacy", "terms", "sensitive_data"] },
+          "version": { "type": "string", "minLength": 1, "maxLength": 32 }
+        }
+      }
+    }
+  }
+}
