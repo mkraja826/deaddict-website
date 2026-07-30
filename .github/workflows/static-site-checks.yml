@@ -8,6 +8,7 @@ on:
       - 'phase-2/**'
       - 'phase-3/**'
       - 'phase-4/**'
+      - 'phase-5/**'
   pull_request:
   workflow_dispatch:
 
@@ -34,6 +35,10 @@ jobs:
           node --check account.js
           node --check auth-adapter.js
 
+      - name: Validate disabled server operation syntax
+        if: ${{ hashFiles('server/disabled-account-operations.mjs') != '' }}
+        run: node --check server/disabled-account-operations.mjs
+
       - name: Compile Python utilities
         if: ${{ hashFiles('scripts/*.py') != '' }}
         run: python -m py_compile scripts/*.py
@@ -49,3 +54,7 @@ jobs:
       - name: Validate Phase 4 account and server contracts
         if: ${{ hashFiles('scripts/check_phase4_contracts.py') != '' }}
         run: python scripts/check_phase4_contracts.py
+
+      - name: Validate Phase 5 deployment guardrails
+        if: ${{ hashFiles('scripts/check_phase5_deployment.py') != '' }}
+        run: python scripts/check_phase5_deployment.py
