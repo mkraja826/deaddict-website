@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Account preview | DeAddict</title>
+<meta name="description" content="Review the planned DeAddict account, consent, privacy, export, and deletion experience without creating an account or sending data.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#2B6E68">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="site.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .account-wrap{max-width:760px;margin-inline:auto;padding:var(--space-6) var(--space-4) var(--space-8)}
+  .account-panel{display:none;padding:0}
+  .account-panel.is-active{display:block}
+  .account-form{display:grid;gap:var(--space-4);margin-top:var(--space-4)}
+  .account-field{display:grid;gap:.45rem}
+  .account-field label,.consent-row strong{font-weight:650;color:var(--color-ink)}
+  .account-field input,.confirm-input{width:100%;border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:.8rem .9rem;background:var(--color-surface);color:var(--color-ink);font:inherit}
+  .account-field input:focus,.confirm-input:focus{outline:3px solid color-mix(in srgb,var(--color-primary) 24%,transparent);border-color:var(--color-primary)}
+  .consent-list{display:grid;gap:var(--space-3)}
+  .consent-row{display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:start;padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface)}
+  .consent-row input{width:1.1rem;height:1.1rem;margin-top:.2rem}
+  .consent-row span{display:block;color:var(--color-ink-soft);font-size:.9rem;margin-top:.2rem}
+  .account-actions{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center}
+  .account-status{margin-top:var(--space-3)}
+  .settings-list{display:grid;gap:var(--space-3);margin-top:var(--space-4)}
+  .setting-row{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface)}
+  .setting-row p{margin:0;color:var(--color-ink-soft);font-size:.9rem}
+  .danger-zone{margin-top:var(--space-5);padding:var(--space-4);border:1px solid color-mix(in srgb,#b42318 35%,var(--color-border));border-radius:var(--radius-md);background:color-mix(in srgb,#b42318 5%,var(--color-surface))}
+  .danger-zone h2{font-size:1.2rem}
+  .preview-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .65rem;border-radius:999px;background:var(--color-secondary-tint);font-size:.78rem;font-weight:700;color:var(--color-ink)}
+  @media(max-width:600px){.account-wrap{padding-inline:var(--space-3)}.setting-row{align-items:flex-start;flex-direction:column}.account-actions .btn{width:100%;justify-content:center}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="site-header" id="siteHeader"><div class="container header-inner"><a href="index.html" class="logo"><span class="day-arc" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="none" stroke="var(--color-border)" stroke-width="3"/><path d="M14 3 A11 11 0 0 1 23.5 19" fill="none" stroke="var(--color-primary)" stroke-width="3" stroke-linecap="round"/></svg></span>DeAddict</a><div class="header-actions"><a href="privacy.html" class="btn btn-ghost btn-sm">Privacy</a><a href="index.html" class="btn btn-secondary btn-sm">Exit preview</a></div></div></header>
+<main id="main" class="account-wrap" data-account-preview>
+  <div class="notice" style="margin-bottom:var(--space-5);"><p class="mb-0"><strong>Disabled implementation preview:</strong> this page cannot send email, create an account, open a session, save consent, request an export, or delete data. Inputs remain only in page memory and are cleared when you leave or refresh.</p></div>
+
+  <section class="account-panel is-active" data-account-panel="signed-out" aria-labelledby="signin-title">
+    <span class="preview-badge">Phase 4 · Network disabled</span>
+    <h1 id="signin-title" style="font-size:clamp(1.8rem,1.5rem + 1vw,2.4rem);margin-top:var(--space-3);">Preview private account access</h1>
+    <p>A future account would use a passwordless email link. The unsaved demo will remain available without an account.</p>
+    <form class="account-form" data-account-form novalidate>
+      <div class="account-field">
+        <label for="accountEmail">Email address</label>
+        <input id="accountEmail" name="email" type="email" inputmode="email" autocomplete="email" maxlength="254" aria-describedby="emailHelp" required>
+        <small id="emailHelp">This preview does not transmit or retain the address.</small>
+      </div>
+      <fieldset style="border:0;padding:0;margin:0;">
+        <legend style="font-weight:700;margin-bottom:var(--space-3);">Review each decision</legend>
+        <div class="consent-list">
+          <label class="consent-row"><input type="checkbox" name="privacy" required><span><strong>Privacy notice</strong><span>I have reviewed the current privacy notice and understand the account system is not active.</span></span></label>
+          <label class="consent-row"><input type="checkbox" name="terms" required><span><strong>Terms of use</strong><span>I understand DeAddict is a wellness product and not medical, detox, emergency, or crisis care.</span></span></label>
+          <label class="consent-row"><input type="checkbox" name="sensitiveData" required><span><strong>Sensitive-data consent</strong><span>I understand future saved goals and check-ins may reveal highly sensitive habit and recovery information.</span></span></label>
+        </div>
+      </fieldset>
+      <p class="field-error" data-account-error role="alert" hidden></p>
+      <div class="account-actions"><button class="btn btn-primary" type="submit">Preview magic-link request</button><a class="btn btn-ghost" href="onboarding.html">Continue without account</a></div>
+    </form>
+  </section>
+
+  <section class="account-panel" data-account-panel="link-requested" aria-labelledby="requested-title" hidden>
+    <span class="preview-badge">Generic confirmation</span>
+    <h1 id="requested-title" tabindex="-1" style="font-size:clamp(1.8rem,1.5rem + 1vw,2.4rem);margin-top:var(--space-3);">Check your email if an account can continue</h1>
+    <p>For privacy, a real system would use the same response whether or not an address is already registered. No email was sent by this preview.</p>
+    <div class="notice"><p class="mb-0">A production link would expire, work only on an approved HTTPS origin, and never place recovery information in the URL.</p></div>
+    <div class="account-actions" style="margin-top:var(--space-4);"><button class="btn btn-primary" type="button" data-preview-session>Preview signed-in controls</button><button class="btn btn-ghost" type="button" data-account-reset>Start over</button></div>
+  </section>
+
+  <section class="account-panel" data-account-panel="signed-in" aria-labelledby="settings-title" hidden>
+    <span class="preview-badge">Fictional signed-in state</span>
+    <h1 id="settings-title" tabindex="-1" style="font-size:clamp(1.8rem,1.5rem + 1vw,2.4rem);margin-top:var(--space-3);">Privacy and account controls</h1>
+    <p>No real session exists. These controls demonstrate the future product boundary and do not save changes or send requests.</p>
+    <div class="settings-list">
+      <div class="setting-row"><div><strong>Discreet mode</strong><p>Use neutral labels and avoid sensitive content in notifications and page titles.</p></div><button class="btn btn-secondary btn-sm" type="button" aria-pressed="true" data-setting-toggle>On</button></div>
+      <div class="setting-row"><div><strong>Revoke all sessions</strong><p>A production action would require recent authentication and invalidate every refresh session.</p></div><button class="btn btn-secondary btn-sm" type="button" data-session-revoke>Preview revoke</button></div>
+      <div class="setting-row"><div><strong>Export my data</strong><p>A production export would be machine-readable, short-lived, and available only after recent authentication.</p></div><button class="btn btn-secondary btn-sm" type="button" data-export-request>Preview export</button></div>
+    </div>
+    <p class="notice account-status" data-account-status role="status" hidden></p>
+    <div class="danger-zone">
+      <h2>Delete account and saved data</h2>
+      <p>A production deletion would revoke sessions, remove application rows, delete the identity, and document backup expiry. This preview performs none of those actions.</p>
+      <button class="btn btn-ghost" type="button" data-delete-open>Preview deletion confirmation</button>
+      <div data-delete-confirm hidden style="margin-top:var(--space-4);">
+        <label for="deletePhrase" style="display:block;font-weight:650;margin-bottom:.45rem;">Type DELETE to confirm the preview</label>
+        <input class="confirm-input" id="deletePhrase" type="text" autocomplete="off" maxlength="6">
+        <p class="field-error" data-delete-error role="alert" hidden></p>
+        <div class="account-actions" style="margin-top:var(--space-3);"><button class="btn btn-primary" type="button" data-delete-submit>Confirm preview only</button><button class="btn btn-ghost" type="button" data-delete-cancel>Cancel</button></div>
+      </div>
+    </div>
+    <div class="account-actions" style="margin-top:var(--space-5);"><button class="btn btn-ghost" type="button" data-account-reset>Return to signed-out preview</button></div>
+  </section>
+</main>
+<footer class="site-footer"><div class="container"><p class="footer-disclaimer">DeAddict remains a wellness prototype. No account system or persistent recovery storage is active.</p><div class="footer-bottom"><span>© 2026 DeAddict.</span><span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="accessibility.html">Accessibility</a></span></div></div></footer>
+<script src="script.js"></script>
+<script src="auth-adapter.js"></script>
+<script src="account.js"></script>
+</body>
+</html>

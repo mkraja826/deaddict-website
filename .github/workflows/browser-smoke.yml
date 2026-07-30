@@ -5,6 +5,8 @@ on:
     branches:
       - 'phase-1/**'
       - 'phase-2/**'
+      - 'phase-3/**'
+      - 'phase-4/**'
   pull_request:
   workflow_dispatch:
 
@@ -23,7 +25,16 @@ jobs:
         run: |
           set -euo pipefail
           if grep -En 'localStorage|sessionStorage|document\.cookie|indexedDB|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket' onboarding.js; then
-            echo 'The onboarding controller must remain non-persistent and network-free in Phase 2.'
+            echo 'The onboarding controller must remain non-persistent and network-free.'
+            exit 1
+          fi
+
+      - name: Enforce disabled account preview
+        if: ${{ hashFiles('account.js', 'auth-adapter.js') != '' }}
+        run: |
+          set -euo pipefail
+          if grep -En 'localStorage|sessionStorage|document\.cookie|indexedDB|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|navigator\.credentials|service[_-]?role|supabase[_-]?(url|key)|anon[_-]?key' account.js auth-adapter.js; then
+            echo 'The Phase 4 account preview must remain provider-free, non-persistent, and network-disabled.'
             exit 1
           fi
 
@@ -54,6 +65,8 @@ jobs:
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/index-mobile.png http://127.0.0.1:8080/index.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/onboarding-mobile.png http://127.0.0.1:8080/onboarding.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/onboarding-review-mobile.png 'http://127.0.0.1:8080/onboarding.html?ci-smoke=alcohol'
+          "$browser" "${common_flags[@]}" --window-size=390,1000 --screenshot=browser-smoke/account-mobile.png http://127.0.0.1:8080/account.html
+          "$browser" "${common_flags[@]}" --window-size=390,1000 --screenshot=browser-smoke/account-settings-mobile.png 'http://127.0.0.1:8080/account.html?ci-smoke=account'
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/dashboard-mobile.png http://127.0.0.1:8080/dashboard.html
           "$browser" "${common_flags[@]}" --window-size=390,844 --screenshot=browser-smoke/checkin-mobile.png http://127.0.0.1:8080/checkin.html
           "$browser" "${common_flags[@]}" --window-size=1440,1200 --screenshot=browser-smoke/alcohol-desktop.png http://127.0.0.1:8080/support-alcohol.html
@@ -62,12 +75,14 @@ jobs:
 
           "$browser" "${common_flags[@]}" --dump-dom http://127.0.0.1:8080/onboarding.html > browser-smoke/onboarding-dom.html
           "$browser" "${common_flags[@]}" --dump-dom 'http://127.0.0.1:8080/onboarding.html?ci-smoke=alcohol' > browser-smoke/onboarding-review-dom.html
+          "$browser" "${common_flags[@]}" --dump-dom http://127.0.0.1:8080/account.html > browser-smoke/account-dom.html
+          "$browser" "${common_flags[@]}" --dump-dom 'http://127.0.0.1:8080/account.html?ci-smoke=account' > browser-smoke/account-settings-dom.html
 
           python - <<'PY'
           from html.parser import HTMLParser
           from pathlib import Path
 
-          class Parser(HTMLParser):
+          class OnboardingParser(HTMLParser):
               def __init__(self):
                   super().__init__()
                   self.steps = {}
@@ -102,12 +117,47 @@ jobs:
                       self.summary[self.current_summary] = self.summary[self.current_summary].strip()
                       self.current_summary = None
 
-          def parse(path):
-              parser = Parser()
+          class AccountParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.root = {}
+                  self.panels = {}
+                  self.checked = 0
+                  self.email_value = ''
+                  self.status_hidden = None
+                  self.status_text = ''
+                  self.in_status = False
+
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if 'data-account-preview' in values:
+                      self.root = values
+                  panel = values.get('data-account-panel')
+                  if panel:
+                      self.panels[panel] = 'hidden' in values
+                  if tag == 'input' and values.get('id') == 'accountEmail':
+                      self.email_value = values.get('value', '')
+                  if tag == 'input' and values.get('type') == 'checkbox' and 'checked' in values:
+                      self.checked += 1
+                  if 'data-account-status' in values:
+                      self.status_hidden = 'hidden' in values
+                      self.in_status = True
+
+              def handle_data(self, data):
+                  if self.in_status:
+                      self.status_text += data
+
+              def handle_endtag(self, tag):
+                  if tag == 'p' and self.in_status:
+                      self.in_status = False
+                      self.status_text = self.status_text.strip()
+
+          def parse(parser_type, path):
+              parser = parser_type()
               parser.feed(Path(path).read_text(encoding='utf-8'))
               return parser
 
-          initial = parse('browser-smoke/onboarding-dom.html')
+          initial = parse(OnboardingParser, 'browser-smoke/onboarding-dom.html')
           if initial.steps != {'category': False, 'approach': True, 'review': True}:
               raise SystemExit(f'Unexpected initial onboarding visibility: {initial.steps}')
           if initial.selected:
@@ -115,7 +165,7 @@ jobs:
           if initial.summary != {'category': 'Not selected', 'approach': 'Not selected'}:
               raise SystemExit(f'Unexpected initial summary: {initial.summary}')
 
-          review = parse('browser-smoke/onboarding-review-dom.html')
+          review = parse(OnboardingParser, 'browser-smoke/onboarding-review-dom.html')
           if review.steps != {'category': True, 'approach': True, 'review': False}:
               raise SystemExit(f'CI onboarding did not reach review: {review.steps}')
           if review.selected != ['Alcohol', 'Stop completely']:
@@ -128,6 +178,30 @@ jobs:
               raise SystemExit('Local CI onboarding flow did not complete.')
           if review.root.get('data-ci-focused') != 'review-title':
               raise SystemExit(f'Review heading did not receive focus: {review.root.get("data-ci-focused")}')
+
+          account_initial = parse(AccountParser, 'browser-smoke/account-dom.html')
+          if account_initial.panels != {'signed-out': False, 'link-requested': True, 'signed-in': True}:
+              raise SystemExit(f'Unexpected initial account visibility: {account_initial.panels}')
+          if account_initial.checked or account_initial.email_value:
+              raise SystemExit('Account preview must begin without an email value or preselected consent.')
+          if account_initial.root.get('data-auth-adapter') != 'disabled':
+              raise SystemExit(f'Auth adapter is not disabled: {account_initial.root}')
+
+          account_settings = parse(AccountParser, 'browser-smoke/account-settings-dom.html')
+          if account_settings.panels != {'signed-out': True, 'link-requested': True, 'signed-in': False}:
+              raise SystemExit(f'CI account flow did not reach signed-in preview: {account_settings.panels}')
+          if account_settings.root.get('data-auth-adapter') != 'disabled':
+              raise SystemExit('CI account flow used an unexpected auth adapter state.')
+          if account_settings.root.get('data-ci-smoke-complete') != 'true':
+              raise SystemExit('Local CI account flow did not complete.')
+          if account_settings.root.get('data-ci-state') != 'signed-in':
+              raise SystemExit(f'Unexpected CI account state: {account_settings.root.get("data-ci-state")}')
+          if account_settings.root.get('data-ci-email-cleared') != 'true' or account_settings.email_value:
+              raise SystemExit('Account preview did not clear the entered email address.')
+          if account_settings.root.get('data-ci-focused') != 'settings-title':
+              raise SystemExit(f'Signed-in heading did not retain focus: {account_settings.root.get("data-ci-focused")}')
+          if account_settings.status_hidden is not False or 'no export request was created' not in account_settings.status_text:
+              raise SystemExit(f'Export preview status is missing or incorrect: {account_settings.status_text!r}')
           PY
 
           for image in browser-smoke/*.png; do

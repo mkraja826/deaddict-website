@@ -4,9 +4,9 @@ DeAddict is currently a static front-end prototype for a private, judgment-free 
 
 ## Current status
 
-Phase 1 established the honest, responsive static foundation. Phase 2 added trust pages and non-persistent onboarding. Phase 3 now contains a validated but **unapplied** private-account and database architecture.
+Phase 1 established the honest, responsive static foundation. Phase 2 added trust pages and non-persistent onboarding. Phase 3 added a validated but **unapplied** private-account and database architecture. Phase 4 adds a disabled account UI and provider-neutral server contracts without connecting a backend.
 
-No live backend project is connected, authentication is not enabled, and the public prototype still does not save onboarding or check-in answers.
+No live backend project is connected, authentication is not enabled, and the public prototype still does not save onboarding, account-preview, or check-in answers.
 
 ### Public prototype implemented
 
@@ -35,14 +35,25 @@ No live backend project is connected, authentication is not enabled, and the pub
 - Duplicate active export/deletion request prevention
 - Structured check-ins only; free-text recovery journals remain excluded
 
+### Phase 4 implementation shell
+
+- `account.html` noindex account, consent, privacy, export, session, and deletion preview
+- Generic magic-link confirmation that does not reveal whether an account exists
+- Typed email cleared immediately after the local preview transition
+- No preselected privacy, terms, or sensitive-data decisions
+- Disabled provider-neutral auth adapter returning `AUTH_NOT_CONFIGURED`
+- Provider-neutral server-operation contracts for export, deletion, session revocation, and auth callback completion
+- Strict JSON request/response schemas that reject extra client-owned properties
+- Static and browser checks proving the account preview remains network-free and non-persistent
+
 ### Deliberately not implemented
 
 - Live Supabase connection or migration deployment
-- Production authentication or email delivery
-- Saved onboarding answers, journals, goals, check-ins, or reports
+- Production authentication, callback handling, sessions, or email delivery
+- Saved onboarding answers, account-preview inputs, journals, goals, check-ins, or reports
 - Analytics, advertising, session replay, email capture, or marketing automation
 - Billing, subscriptions, trials, or refunds
-- Production export generation or deletion orchestration
+- Production export generation, session revocation, or deletion orchestration
 - AI processing of recovery content
 - Clinician, family, employer, administrator, or community access
 - Claims of HIPAA, GDPR, DPDP, medical-device, clinical, legal, or accessibility certification
@@ -51,11 +62,14 @@ No live backend project is connected, authentication is not enabled, and the pub
 
 `DATA_HANDLING.md` is the primary engineering guardrail. Recovery persistence remains disabled until deployment review approves the exact project, domain, consent documents, authentication settings, retention, backups, incident response, export, deletion, and regional requirements.
 
-Additional Phase 3 documents:
+Architecture and implementation-shell documents include:
 
 - `PHASE_3_PLAN.md`
+- `PHASE_4_PLAN.md`
 - `SECURITY_THREAT_MODEL.md`
 - `docs/AUTH_AND_SESSION_CONTRACT.md`
+- `docs/ACCOUNT_UI_STATE_MACHINE.md`
+- `docs/SERVER_FUNCTION_CONTRACTS.md`
 - `docs/PHASE3_POLICY_DECISIONS.md`
 - `docs/DATA_EXPORT_DELETION_RUNBOOK.md`
 - `docs/INCIDENT_RESPONSE_RUNBOOK.md`
@@ -74,9 +88,12 @@ Then open `http://localhost:8080`.
 ```bash
 node --check script.js
 node --check onboarding.js
-python -m py_compile scripts/check_static_site.py scripts/generate_sitemap.py scripts/check_phase3_sql.py
+node --check account.js
+node --check auth-adapter.js
+python -m py_compile scripts/*.py
 python scripts/check_static_site.py
 python scripts/check_phase3_sql.py
+python scripts/check_phase4_contracts.py
 ```
 
 ## PostgreSQL integration validation
@@ -94,10 +111,21 @@ python scripts/check_phase3_sql.py
 
 The temporary database is destroyed when the workflow job ends. It uses no live Supabase project or production secret.
 
+## Browser validation
+
+`.github/workflows/browser-smoke.yml` renders the public prototype, onboarding flow, and account preview in headless Chrome. The account checks prove:
+
+- initial email and consent fields are empty;
+- the auth adapter is disabled;
+- the local-only interaction path reaches the fictional signed-in settings screen;
+- the typed test email is cleared;
+- the export action creates only an explicit preview message and no request.
+
 ## Main pages
 
 - `index.html` — public landing page
 - `onboarding.html` — non-persistent onboarding demo, `noindex`
+- `account.html` — disabled account and privacy-controls preview, `noindex`
 - `support-alcohol.html` — educational alcohol guide
 - `pricing.html` — current access and planned product status
 - `privacy.html` — prototype privacy notice
@@ -118,7 +146,7 @@ Then add the real sitemap URL to `robots.txt`.
 
 ## Deployment boundary
 
-Merging Phase 3 code does not authorize applying the migration. Before production accounts or persistence are enabled:
+Merging Phase 3 or Phase 4 code does not authorize applying the migration or enabling account operations. Before production accounts or persistence are enabled:
 
 1. Create and explicitly identify a dedicated DeAddict backend project that is not MDMS, CapDent, Astro, or another existing project.
 2. Select the final HTTPS domain and exact redirect allow-list.
@@ -126,8 +154,9 @@ Merging Phase 3 code does not authorize applying the migration. Before productio
 4. Configure passwordless email delivery and abuse controls.
 5. Verify provider token, refresh, session-revocation, backup, and deletion behavior.
 6. Name an incident owner and private reporting channel.
-7. Test authentication, reauthentication, export, deletion, secrets, and cross-user access in the isolated project.
-8. Complete regional legal, clinical, security, privacy, and accessibility review.
+7. Implement server-only export, deletion, and all-session-revocation functions with secret management.
+8. Test authentication, reauthentication, callbacks, export, deletion, secrets, and cross-user access in the isolated project.
+9. Complete regional legal, clinical, security, privacy, and accessibility review.
 
 ## Safety and content sources
 
