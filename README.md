@@ -4,7 +4,7 @@ DeAddict is currently a static front-end prototype for a private, judgment-free 
 
 ## Current status
 
-Phase 1 established the honest, responsive static foundation. Phase 2 added trust pages and non-persistent onboarding. Phase 3 added a validated but **unapplied** private-account and database architecture. Phase 4 adds a disabled account UI and provider-neutral server contracts without connecting a backend.
+Phase 1 established the honest, responsive static foundation. Phase 2 added trust pages and non-persistent onboarding. Phase 3 added a validated but **unapplied** private-account and database architecture. Phase 4 added a disabled account UI and provider-neutral server contracts. Phase 5 adds fail-closed deployment guardrails without selecting or connecting a backend.
 
 No live backend project is connected, authentication is not enabled, and the public prototype still does not save onboarding, account-preview, or check-in answers.
 
@@ -46,6 +46,16 @@ No live backend project is connected, authentication is not enabled, and the pub
 - Strict JSON request/response schemas that reject extra client-owned properties
 - Static and browser checks proving the account preview remains network-free and non-persistent
 
+### Phase 5 deployment guardrails
+
+- `config/runtime-config.disabled.json` with every account and persistence capability disabled
+- No default public origin, redirect origin, backend provider, project reference, key, secret, or consent version
+- Strict runtime configuration JSON schema
+- Disabled server-operation handlers returning `DEPLOYMENT_NOT_CONFIGURED`
+- Secret and runtime exposure boundary
+- Deployment approval checklist
+- CI checker rejecting configured origins, project identifiers, enabled feature flags, embedded URLs, provider clients, and credential-like material
+
 ### Deliberately not implemented
 
 - Live Supabase connection or migration deployment
@@ -58,18 +68,21 @@ No live backend project is connected, authentication is not enabled, and the pub
 - Clinician, family, employer, administrator, or community access
 - Claims of HIPAA, GDPR, DPDP, medical-device, clinical, legal, or accessibility certification
 
-## Data boundary
+## Data and deployment boundary
 
-`DATA_HANDLING.md` is the primary engineering guardrail. Recovery persistence remains disabled until deployment review approves the exact project, domain, consent documents, authentication settings, retention, backups, incident response, export, deletion, and regional requirements.
+`DATA_HANDLING.md` remains the primary engineering guardrail. `config/runtime-config.disabled.json` is the current runtime truth: deployment mode is disabled, all origins and backend identifiers are empty, and every capability flag is false.
 
-Architecture and implementation-shell documents include:
+Architecture, implementation-shell, and deployment documents include:
 
 - `PHASE_3_PLAN.md`
 - `PHASE_4_PLAN.md`
+- `PHASE_5_PLAN.md`
 - `SECURITY_THREAT_MODEL.md`
 - `docs/AUTH_AND_SESSION_CONTRACT.md`
 - `docs/ACCOUNT_UI_STATE_MACHINE.md`
 - `docs/SERVER_FUNCTION_CONTRACTS.md`
+- `docs/SECRET_AND_RUNTIME_BOUNDARY.md`
+- `docs/DEPLOYMENT_APPROVAL_CHECKLIST.md`
 - `docs/PHASE3_POLICY_DECISIONS.md`
 - `docs/DATA_EXPORT_DELETION_RUNBOOK.md`
 - `docs/INCIDENT_RESPONSE_RUNBOOK.md`
@@ -90,10 +103,12 @@ node --check script.js
 node --check onboarding.js
 node --check account.js
 node --check auth-adapter.js
+node --check server/disabled-account-operations.mjs
 python -m py_compile scripts/*.py
 python scripts/check_static_site.py
 python scripts/check_phase3_sql.py
 python scripts/check_phase4_contracts.py
+python scripts/check_phase5_deployment.py
 ```
 
 ## PostgreSQL integration validation
@@ -146,7 +161,7 @@ Then add the real sitemap URL to `robots.txt`.
 
 ## Deployment boundary
 
-Merging Phase 3 or Phase 4 code does not authorize applying the migration or enabling account operations. Before production accounts or persistence are enabled:
+Merging Phase 3, Phase 4, or Phase 5 code does not authorize applying the migration or enabling account operations. Before production accounts or persistence are enabled:
 
 1. Create and explicitly identify a dedicated DeAddict backend project that is not MDMS, CapDent, Astro, or another existing project.
 2. Select the final HTTPS domain and exact redirect allow-list.
@@ -157,6 +172,9 @@ Merging Phase 3 or Phase 4 code does not authorize applying the migration or ena
 7. Implement server-only export, deletion, and all-session-revocation functions with secret management.
 8. Test authentication, reauthentication, callbacks, export, deletion, secrets, and cross-user access in the isolated project.
 9. Complete regional legal, clinical, security, privacy, and accessibility review.
+10. Record deployment approval, rollback plan, secret rotation evidence, and the exact project and origin.
+
+Until that approval, `deploymentMode` must remain `disabled` and all privileged account operations must fail closed.
 
 ## Safety and content sources
 

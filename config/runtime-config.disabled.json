@@ -1,0 +1,18 @@
+{
+  "deploymentMode": "disabled",
+  "publicOrigin": null,
+  "allowedRedirectOrigins": [],
+  "backendProvider": null,
+  "backendProjectRef": null,
+  "publicClientKeyConfigured": false,
+  "serverSecretsConfigured": false,
+  "emailDeliveryConfigured": false,
+  "migrationApplied": false,
+  "authEnabled": false,
+  "persistenceEnabled": false,
+  "exportEnabled": false,
+  "deletionEnabled": false,
+  "sessionRevocationEnabled": false,
+  "incidentOwnerConfigured": false,
+  "approvedConsentVersions": []
+}
