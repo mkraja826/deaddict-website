@@ -39,6 +39,10 @@ jobs:
         if: ${{ hashFiles('server/disabled-account-operations.mjs') != '' }}
         run: node --check server/disabled-account-operations.mjs
 
+      - name: Test disabled server operations
+        if: ${{ hashFiles('tests/phase5/disabled-operations.mjs') != '' }}
+        run: node tests/phase5/disabled-operations.mjs
+
       - name: Compile Python utilities
         if: ${{ hashFiles('scripts/*.py') != '' }}
         run: python -m py_compile scripts/*.py
